@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Japanese Quest – Learn Japanese (Duolingo Style)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    * { box-sizing: border-box; font-family: system-ui, sans-serif; }
+    body { margin:0; padding:0; background:#eef2ff; display:flex; justify-content:center; align-items:center; min-height:100vh; }
+    .app { background:#fff; width:100%; max-width:520px; padding:28px 24px 32px; border-radius:18px; box-shadow:0 12px 40px rgba(0,0,0,0.12); }
+    h1 { text-align:center; margin-bottom:4px; font-size:1.6rem; font-weight:700; color:#312e81; }
+    .subtitle { text-align:center; color:#6b7280; margin-bottom:16px; }
+    .progress-wrapper { background:#e5e7eb; border-radius:999px; height:10px; overflow:hidden; margin-bottom:10px; }
+    .progress-bar { background:#6366f1; height:100%; width:0%; transition:width .25s ease; }
+    .progress-text { text-align:right; font-size:.85rem; color:#4b5563; margin-bottom:14px; }
+    .question-box { background:#f9fafb; border:1px solid #e5e7eb; padding:12px; border-radius:14px; margin-bottom:18px; }
+    .question-meta { font-size:.85rem; color:#6b7280; margin-bottom:4px; }
+    .question-text { font-size:1rem; font-weight:500; margin-bottom:6px; }
+    .prompt-text { font-size:1.4rem; font-weight:700; color:#1e1b4b; margin-bottom:4px; }
+    .direction-text { font-size:.85rem; color:#6b7280; margin-bottom:10px; }
+    .options { display:grid; gap:10px; margin-bottom:16px; }
+    .option-btn { padding:10px 14px; background:#fff; border-radius:12px; border:1px solid #d1d5db; font-size:1rem; cursor:pointer; text-align:left; transition:.15s; }
+    .option-btn:hover { background:#eef2ff; transform:translateY(-2px); }
+    .option-btn.correct { background:#dcfce7; border-color:#16a34a; }
+    .option-btn.wrong { background:#fee2e2; border-color:#dc2626; }
+    .option-btn.disabled { pointer-events:none; opacity:.75; }
+    .feedback { font-size:.95rem; min-height:1.3em; margin-bottom:12px; }
+    .feedback.correct { color:#16a34a; font-weight:600; }
+    .feedback.wrong { color:#dc2626; font-weight:600; }
+    .bottom-bar { display:flex; justify-content:space-between; align-items:center; }
+    .score-text { font-size:.95rem; font-weight:600; color:#312e81; }
+    .primary-btn { background:#6366f1; color:white; padding:10px 18px; border-radius:12px; border:none; font-weight:700; cursor:pointer; }
+    .primary-btn:hover { background:#4f46e5; transform:translateY(-1px); }
+    .primary-btn:disabled { opacity:.4; transform:none; cursor:default; }
+    .summary { margin-top:20px; text-align:center; display:none; }
+    .badge { background:#eef2ff; padding:4px 12px; border-radius:999px; font-size:.75rem; color:#4338ca; margin-bottom:10px; display:inline-block; }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <h1>Japanese Quest</h1>
+    <div class="subtitle">30-Question Learning Game • Duolingo-Style</div>
+
+    <div class="progress-wrapper"><div class="progress-bar" id="progress-bar"></div></div>
+    <div class="progress-text" id="progress-text">Question 1 / 30</div>
+
+    <div class="question-box">
+      <div class="question-meta" id="question-meta"></div>
+      <div class="question-text" id="question-text"></div>
+      <div class="prompt-text" id="prompt-text"></div>
+      <div class="direction-text" id="direction-text"></div>
+    </div>
+
+    <div class="options" id="options"></div>
+    <div class="feedback" id="feedback"></div>
+
+    <div class="bottom-bar">
+      <div class="score-text" id="score-text">Score: 0</div>
+      <button class="primary-btn" id="next-btn" disabled>Next ▶</button>
+    </div>
+
+    <div class="summary" id="summary"></div>
+  </div>
+
+<script>
+const questions = [
+  {meta:"Greetings",question:"Japanese for “Hello”?",prompt:"Hello",direction:"Choose translation.",options:["さようなら","こんにちは","ありがとう","おはよう"],correctIndex:1,explanation:"こんにちは means Hello."},
+  {meta:"Numbers",question:"What is “one”?",prompt:"one",direction:"Choose word.",options:["いち","に","さん","よん"],correctIndex:0,explanation:"いち = one."},
+  {meta:"Polite",question:"Polite “Thank you”?",prompt:"Thank you",direction:"Choose polite form.",options:["ありがとう","ごめん","お願いします","ありがとうございます"],correctIndex:3,explanation:"ありがとうございます = polite thank you."},
+  {meta:"Farewell",question:"Meaning of さようなら?",prompt:"さようなら",direction:"Choose meaning.",options:["Goodbye","Good night","Excuse me","Please"],correctIndex:0,explanation:"さようなら= goodbye."},
+  {meta:"Feelings",question:"“Happy” in Japanese?",prompt:"happy",direction:"Choose best match.",options:["しあわせ","あつい","ひま","かわいい"],correctIndex:0,explanation:"しあわせ = happy."},
+  {meta:"Food",question:"Meaning of みず?",prompt:"みず",direction:"Choose meaning.",options:["rice","water","fish","tea"],correctIndex:1,explanation:"みず = water."},
+  {meta:"People",question:"Word for “friend”?",prompt:"friend",direction:"Choose.",options:["ともだち","かぞく","せんせい","こども"],correctIndex:0,explanation:"ともだち = friend."},
+  {meta:"People",question:"Meaning of せんせい?",prompt:"せんせい",direction:"Choose.",options:["student","teacher","doctor","friend"],correctIndex:1,explanation:"せんせい = teacher."},
+  {meta:"Time",question:"“Morning”?",prompt:"morning",direction:"Choose.",options:["よる","あした","あさ","ひる"],correctIndex:2,explanation:"あさ = morning."},
+  {meta:"Time",question:"“Night”?",prompt:"night",direction:"Choose.",options:["あさ","ひる","よる","きょう"],correctIndex:2,explanation:"よる = night."},
+  {meta:"Hiragana",question:"Which is “a”?",prompt:"a",direction:"Char?",options:["あ","い","う","お"],correctIndex:0,explanation:"あ = a."},
+  {meta:"Hiragana",question:"Which is “ki”?",prompt:"ki",direction:"Char?",options:["こ","く","き","か"],correctIndex:2,explanation:"き = ki."},
+  {meta:"Hiragana",question:"Which is “su”?",prompt:"su",direction:"Char?",options:["す","し","せ","そ"],correctIndex:0,explanation:"す = su."},
+  {meta:"Hiragana",question:"Which is “no”?",prompt:"no",direction:"Char?",options:["ぬ","ね","の","な"],correctIndex:2,explanation:"の = no."},
+  {meta:"Hiragana",question:"Which is “ta”?",prompt:"ta",direction:"Char?",options:["た","て","ち","と"],correctIndex:0,explanation:"た = ta."},
+  {meta:"Hiragana",question:"Which is “ri”?",prompt:"ri",direction:"Char?",options:["る","れ","り","ろ"],correctIndex:2,explanation:"り = ri."},
+  {meta:"Hiragana",question:"Spell neko",prompt:"neko",direction:"Choose spelling.",options:["ねけ","ねこ","ぬこ","ねく"],correctIndex:1,explanation:"ねこ = neko."},
+  {meta:"Hiragana",question:"Spell sushi",prompt:"sushi",direction:"Choose.",options:["すし","すひ","しす","すうし"],correctIndex:0,explanation:"すし = sushi."},
+  {meta:"Hiragana",question:"Spell kumo",prompt:"kumo",direction:"Choose.",options:["くま","くも","こも","かも"],correctIndex:1,explanation:"くも = kumo."},
+  {meta:"Hiragana",question:"Reading of たべる?",prompt:"たべる",direction:"Choose romaji.",options:["taberu","tabero","tobira","tabura"],correctIndex:0,explanation:"たべる = taberu."},
+  {meta:"Phrase",question:"Meaning of おはようございます?",prompt:"おはようございます",direction:"Choose.",options:["Good evening","Good morning (polite)","See you","Nice to meet you"],correctIndex:1,explanation:"Polite morning."},
+  {meta:"Phrase",question:"“Good night”?",prompt:"Good night",direction:"Choose.",options:["こんばんは","こんにちは","おやすみなさい","じゃあね"],correctIndex:2,explanation:"おやすみなさい."},
+  {meta:"Phrase",question:"Meaning of ごめんなさい?",prompt:"ごめんなさい",direction:"Choose.",options:["Thank you","I’m sorry","Excuse me","See you"],correctIndex:1,explanation:"Means sorry."},
+  {meta:"Grammar",question:"Role of は?",prompt:"私は学生です",direction:"Choose.",options:["Object","Topic","Location","Past"],correctIndex:1,explanation:"は = topic marker."},
+  {meta:"Grammar",question:"Role of です?",prompt:"日本人です",direction:"Choose.",options:["Past","Not","Polite ending","Possession"],correctIndex:2,explanation:"です = polite ending."},
+  {meta:"Phrase",question:"“I understand”?",prompt:"I understand",direction:"Choose.",options:["みえます","しります","わかります","きこえます"],correctIndex:2,explanation:"わかります."},
+  {meta:"Phrase",question:"“Nice to meet you”?",prompt:"Nice to meet you",direction:"Choose.",options:["こんにちは","はじめまして","よろしくおねがいします","ありがとう"],correctIndex:2,explanation:"よろしくおねがいします."},
+  {meta:"Phrase",question:"Meaning of おげんきですか?",prompt:"おげんきですか？",direction:"Choose.",options:["Are you busy?","How are you?","Where?","Time?"],correctIndex:1,explanation:"Means how are you."},
+  {meta:"Phrase",question:"“I am American”?",prompt:"I am American",direction:"Choose.",options:["アメリカじんです","アメリカごです","アメリカにです","アメリカはです"],correctIndex:0,explanation:"アメリカじんです."},
+  {meta:"Phrase",question:"“I don’t understand”?",prompt:"I don’t understand",direction:"Choose.",options:["わかりません","わかります","わからない？","わかって"],correctIndex:0,explanation:"わかりません."}
+];
+
+let index=0, score=0, answered=false;
+
+function render(){
+  answered=false;
+  const q=questions[index];
+  document.getElementById("progress-text").textContent=`Question ${index+1}/30`;
+  document.getElementById("progress-bar").style.width=`${(index/30)*100}%`;
+  document.getElementById("question-meta").textContent=q.meta;
+  document.getElementById("question-text").textContent=q.question;
+  document.getElementById("prompt-text").textContent=q.prompt;
+  document.getElementById("direction-text").textContent=q.direction;
+
+  const opt=document.getElementById("options");
+  opt.innerHTML="";
+  q.options.forEach((o,i)=>{
+    const b=document.createElement("button");
+    b.textContent=o;
+    b.className="option-btn";
+    b.onclick=()=>check(i,b);
+    opt.appendChild(b);
+  });
+
+  document.getElementById("feedback").textContent="";
+  document.getElementById("next-btn").disabled=true;
+}
+
+function check(i,btn){
+  if(answered)return;
+  answered=true;
+
+  const q=questions[index];
+  document.querySelectorAll(".option-btn").forEach((b,x)=>{
+    b.classList.add("disabled");
+    if(x===q.correctIndex) b.classList.add("correct");
+  });
+
+  if(i===q.correctIndex){
+    score++;
+    document.getElementById("feedback").textContent="Correct! "+q.explanation;
+    document.getElementById("feedback").className="feedback correct";
+  } else {
+    btn.classList.add("wrong");
+    document.getElementById("feedback").textContent="Incorrect. "+q.explanation;
+    document.getElementById("feedback").className="feedback wrong";
+  }
+
+  document.getElementById("score-text").textContent="Score: "+score;
+  document.getElementById("next-btn").disabled=false;
+
+  if(index===29) document.getElementById("next-btn").textContent="Finish ✔";
+}
+
+document.getElementById("next-btn").onclick=()=>{
+  if(index<29){ index++; render(); }
+  else showSummary();
+};
+
+function showSummary(){
+  const percent=Math.round((score/30)*100);
+  const s=document.getElementById("summary");
+  s.style.display="block";
+  s.innerHTML=`<div class="badge">Quiz Complete</div>
+  <h2>Score: ${score}/30</h2><p>${percent}% correct</p>
+  <button class="primary-btn" onclick="restart()">Play Again 🔁</button>`;
+
+  document.querySelector(".question-box").style.display="none";
+  document.getElementById("options").style.display="none";
+  document.getElementById("feedback").style.display="none";
+  document.querySelector(".bottom-bar").style.display="none";
+  document.querySelector(".progress-wrapper").style.display="none";
+  document.getElementById("progress-text").style.display="none";
+}
+
+function restart(){
+  index=0; score=0;
+  document.getElementById("score-text").textContent="Score: 0";
+  document.getElementById("next-btn").textContent="Next ▶";
+
+  document.querySelector(".question-box").style.display="";
+  document.getElementById("options").style.display="";
+  document.getElementById("feedback").style.display="";
+  document.querySelector(".bottom-bar").style.display="";
+  document.querySelector(".progress-wrapper").style.display="";
+  document.getElementById("progress-text").style.display="";
+
+  document.getElementById("summary").style.display="none";
+  render();
+}
+
+render();
+</script>
+
+</body>
+</html>
