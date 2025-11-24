@@ -2,263 +2,512 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Activity Puzzle – Choose First → Last</title>
+<title>Activity Puzzle – Dora Explorer Jungle</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <style>
-  * { box-sizing: border-box; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  * {
+    box-sizing: border-box;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
   body {
-    margin: 0; padding: 0;
-    background: radial-gradient(circle at top, #bfdbfe 0, #e5f3ff 45%, #f9fafb 100%);
-    display: flex; justify-content: center; align-items: center;
+    margin: 0;
+    padding: 0;
     min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle at top, #fef9c3 0, #bbf7d0 30%, #e0f2fe 70%, #f1f5f9 100%);
   }
   .app {
-    background: #ffffff;
-    width: 100%; max-width: 720px;
-    margin: 10px; padding: 18px 16px 22px;
-    border-radius: 20px;
-    box-shadow: 0 16px 40px rgba(15,23,42,0.25);
+    background: #fff9e6;
+    width: 100%;
+    max-width: 760px;
+    margin: 10px;
+    padding: 16px 16px 20px;
+    border-radius: 22px;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.3);
+    position: relative;
+    overflow: hidden;
+    border: 3px solid #fcd34d;
+  }
+  .app::before {
+    content: "";
+    position: absolute;
+    inset: -40px;
+    background: radial-gradient(circle at 10% 0, rgba(34, 197, 94, 0.16), transparent 60%),
+                radial-gradient(circle at 90% 0, rgba(56, 189, 248, 0.16), transparent 55%);
+    pointer-events: none;
+    z-index: -1;
+  }
+  .jungle-bar {
+    background: linear-gradient(135deg, #16a34a, #22c55e, #22c5a8);
+    border-radius: 18px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
     position: relative;
     overflow: hidden;
   }
-  h1 { margin: 0 0 4px; text-align: center; font-size: 1.4rem; color:#111827; }
-  .subtitle { text-align: center; font-size: .9rem; color: #4b5563; margin-bottom: 10px; }
-  #file-input { display: none; }
+  .jungle-bar::after {
+    content: "🍃";
+    position: absolute;
+    right: 12px;
+    top: 6px;
+    font-size: 1.6rem;
+    opacity: 0.4;
+  }
+  .jungle-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    background: #fef9c3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    box-shadow: 0 4px 10px rgba(15, 118, 110, 0.45);
+  }
+  .jungle-text h1 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: #fefce8;
+  }
+  .jungle-text p {
+    margin: 2px 0 0;
+    font-size: 0.85rem;
+    color: #fef9c3;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #4b5563;
+    margin: 6px 0 10px;
+  }
+  #file-input {
+    display: none;
+  }
   .upload-label {
-    display: block; text-align: center; margin: 10px auto 4px;
-    background: linear-gradient(135deg,#2563eb,#22c55e);
-    padding: 10px 18px; color: #fff; border-radius: 999px;
-    width: fit-content; cursor: pointer; font-weight: 600;
-    box-shadow: 0 8px 20px rgba(37,99,235,.55);
+    display: block;
+    text-align: center;
+    background: linear-gradient(135deg, #9b5de5, #ec4899);
+    color: #fefce8;
+    padding: 10px 18px;
+    border-radius: 999px;
+    width: fit-content;
+    margin: 0 auto 4px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.95rem;
+    box-shadow: 0 8px 20px rgba(147, 51, 234, 0.6);
+    border: 2px solid #f9a8d4;
   }
-  .small-note { text-align:center; font-size:.78rem; color:#6b7280; margin-bottom:8px; }
+  .upload-label span {
+    margin-right: 4px;
+  }
+  .small-note {
+    text-align: center;
+    font-size: 0.78rem;
+    color: #6b7280;
+    margin-bottom: 10px;
+  }
   .layout {
-    display:flex; gap:10px; flex-wrap:wrap;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
   }
-  .pile, .slots-wrapper {
-    flex:1 1 260px;
+  .pile,
+  .slots-wrapper {
+    flex: 1 1 280px;
+    min-width: 0;
   }
   .section-title {
-    font-size:.9rem; font-weight:600; color:#374151; margin-bottom:4px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .section-title span {
+    font-size: 1rem;
   }
   #pile-area {
-    min-height:180px; border-radius:14px; padding:8px;
-    border:2px dashed #c7d2fe; background:#eff6ff;
-    display:flex; flex-wrap:wrap; gap:8px; justify-content:center;
+    min-height: 170px;
+    border-radius: 16px;
+    padding: 10px;
+    border: 2px dashed #bfdbfe;
+    background: linear-gradient(135deg, #e0f2fe, #dcfce7);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
   }
   .piece {
-    width:110px; height:110px;
-    background:#e5e7eb; border-radius:12px; overflow:hidden;
-    position:relative; cursor:grab; touch-action:none;
-    transition:transform .12s ease, box-shadow .12s ease;
+    width: 110px;
+    height: 110px;
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: grab;
+    background: #e5e7eb;
+    position: relative;
+    box-shadow: 0 3px 8px rgba(15, 23, 42, 0.25);
+    border: 2px solid rgba(15, 23, 42, 0.05);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
   }
   .piece img {
-    width:100%; height:100%; object-fit:cover; display:block;
-    pointer-events:none;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    display: block;
   }
   .piece.selected {
-    outline:3px solid #22c55e;
-    transform:scale(1.03);
-    box-shadow:0 0 0 2px #bbf7d0;
-  }
-  .piece::after {
-    content:"";
-    position:absolute; inset:0; pointer-events:none;
-    border-radius:inherit;
+    border-color: #22c55e;
+    transform: scale(1.04);
+    box-shadow: 0 0 0 2px #bbf7d0, 0 8px 18px rgba(22, 163, 74, 0.5);
   }
   .slots-wrapper {
-    margin-top:4px;
+    margin-top: 4px;
   }
   .slots-grid {
-    display:grid;
-    grid-template-columns: repeat(auto-fit,minmax(110px,1fr));
-    gap:8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
-  .slot-wrapper {
-    display:flex; flex-direction:column; align-items:stretch; gap:4px;
+  .slot-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
   }
   .slot-label {
-    text-align:center; font-size:.82rem; color:#4b5563;
+    width: 68px;
+    min-width: 68px;
+    font-size: 0.82rem;
+    color: #fefce8;
+    background: linear-gradient(135deg, #9b5de5, #6366f1);
+    border-radius: 999px;
+    padding: 5px 8px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(79, 70, 229, 0.5);
+    border: 1px solid #ede9fe;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
   }
-  .slot-label strong { font-size:.86rem; }
+  .slot-label strong {
+    font-size: 0.85rem;
+  }
+  .slot-label span {
+    font-size: 0.73rem;
+  }
+  .slot-label .icon {
+    font-size: 0.95rem;
+  }
   .slot {
-    min-height:110px; border-radius:14px; border:2px dashed #cbd5e1;
-    background:#f9fafb; position:relative; overflow:hidden;
-    transition:border-color .15s ease, background .15s ease, transform .1s ease;
+    flex: 1;
+    height: 110px;
+    border-radius: 18px;
+    border: 3px solid #fed7aa;
+    background: #fef3c7;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+    transition: transform 0.1s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  }
+  .slot.is-first {
+    border-color: #22c55e;
+    background: #dcfce7;
+  }
+  .slot.is-last {
+    border-color: #fb923c;
+    background: #ffedd5;
+  }
+  .slot.empty::before {
+    content: "Drop or tap here";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    color: #9ca3af;
+    pointer-events: none;
   }
   .slot.highlight {
-    border-color:#2563eb;
-    background:#eff6ff;
-    transform:scale(1.02);
+    transform: scale(1.03);
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.4);
+    border-color: #22c55e;
+    background: #ecfccb;
   }
-  .slot.is-first { border-color:#22c55e; background:#ecfdf3; }
-  .slot.is-last { border-color:#f97316; background:#fff7ed; }
-  .slot.empty::before {
-    content:"Drop here";
-    position:absolute; inset:0;
-    display:flex; align-items:center; justify-content:center;
-    font-size:.8rem; color:#9ca3af;
-  }
-  .slot piece-placeholder { display:none; }
   .slot .piece {
-    width:100%; height:100%; border-radius:10px;
-    cursor:grab;
+    width: 100%;
+    height: 100%;
+    border-radius: 14px;
+    box-shadow: none;
+    border-width: 0;
   }
   .helper-text {
-    font-size:.8rem; color:#6b7280; margin-top:4px;
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 4px;
   }
-  .helper-text strong{color:#111827;}
+  .helper-text strong {
+    color: #111827;
+  }
   .bottom-bar {
-    margin-top:10px; display:flex; flex-wrap:wrap;
-    justify-content:space-between; align-items:center; gap:8px;
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+    align-items: center;
   }
   .btn {
-    border-radius:999px; border:none; padding:8px 14px;
-    font-size:.9rem; font-weight:600; cursor:pointer;
-    display:inline-flex; align-items:center; gap:4px;
-    white-space:nowrap;
+    border-radius: 999px;
+    border: none;
+    padding: 8px 14px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
   }
   .btn-primary {
-    background:#22c55e; color:#fff;
-    box-shadow:0 4px 12px rgba(22,163,74,.6);
+    background: linear-gradient(135deg, #16a34a, #22c55e);
+    color: #fefce8;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.7);
   }
   .btn-secondary {
-    background:#e5e7eb; color:#111827;
+    background: #e0f2fe;
+    color: #0f172a;
+    border: 1px solid #bae6fd;
   }
   .btn-danger {
-    background:#fee2e2; color:#b91c1c;
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
   }
   .btn:disabled {
-    opacity:.5; cursor:default; box-shadow:none;
+    opacity: 0.55;
+    cursor: default;
+    box-shadow: none;
   }
   .results {
-    margin-top:8px; font-size:.8rem; color:#111827;
-    background:#eff6ff; border-radius:10px; padding:8px 10px;
-    max-height:150px; overflow-y:auto; display:none;
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: #111827;
+    background: #eff6ff;
+    border-radius: 10px;
+    padding: 8px 10px;
+    max-height: 155px;
+    overflow-y: auto;
+    display: none;
+    border: 1px solid #bfdbfe;
   }
-  .results strong{font-size:.85rem;}
+  .results strong {
+    font-size: 0.85rem;
+  }
   .toast {
-    position:fixed; left:50%; bottom:14px;
-    transform:translateX(-50%);
-    background:rgba(15,23,42,.92); color:#f9fafb;
-    padding:6px 12px; border-radius:999px;
-    font-size:.8rem; display:none; z-index:50;
+    position: fixed;
+    left: 50%;
+    bottom: 14px;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.94);
+    color: #f9fafb;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    display: none;
+    z-index: 999;
   }
   .toast.show {
-    display:inline-flex; align-items:center; gap:6px;
-    animation:fadeToast 2s ease-out forwards;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    animation: fadeToast 2s ease-out forwards;
   }
   @keyframes fadeToast {
-    0%{opacity:0; transform:translate(-50%,4px);}
-    10%{opacity:1; transform:translate(-50%,0);}
-    80%{opacity:1; transform:translate(-50%,0);}
-    100%{opacity:0; transform:translate(-50%,4px);}
+    0% { opacity: 0; transform: translate(-50%, 4px); }
+    10% { opacity: 1; transform: translate(-50%, 0); }
+    80% { opacity: 1; transform: translate(-50%, 0); }
+    100% { opacity: 0; transform: translate(-50%, 4px); }
+  }
+  .sparkle {
+    position: absolute;
+    font-size: 1.4rem;
+    pointer-events: none;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 0;
+    animation: sparklePop 0.6s ease-out forwards;
+  }
+  @keyframes sparklePop {
+    0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+    30% { transform: translate(-50%, -52%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -60%) scale(0.8); opacity: 0; }
   }
   .overlay {
-    position:absolute; inset:0;
-    background:rgba(15,23,42,.35);
-    display:none; align-items:center; justify-content:center;
-    z-index:30;
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.35);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 40;
   }
   .overlay-content {
-    background:#fff; border-radius:16px; padding:14px 14px 12px;
-    width:90%; max-width:320px; text-align:center;
-    box-shadow:0 16px 50px rgba(15,23,42,.6);
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 14px 14px 12px;
+    width: 90%;
+    max-width: 320px;
+    text-align: center;
+    box-shadow: 0 16px 50px rgba(15, 23, 42, 0.65);
   }
   .overlay-content h2 {
-    font-size:1.1rem; margin:4px 0; color:#111827;
+    font-size: 1.1rem;
+    margin: 4px 0;
+    color: #111827;
   }
   .overlay-content p {
-    font-size:.9rem; color:#4b5563; margin:4px 0 10px;
+    font-size: 0.9rem;
+    color: #4b5563;
+    margin: 4px 0 10px;
   }
   .overlay-buttons {
-    display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 6px;
   }
   .intro {
-    position:absolute; inset:0; background:#fff;
-    display:flex; flex-direction:column; align-items:center;
-    justify-content:center; padding:18px 16px; text-align:center; z-index:40;
+    position: absolute;
+    inset: 0;
+    background: #fff9e6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 18px 16px;
+    text-align: center;
+    z-index: 50;
   }
-  .intro h2{margin:6px 0;font-size:1.3rem;color:#111827;}
-  .intro p{margin:4px 0 10px;font-size:.95rem;color:#4b5563;}
-  .intro-emoji{font-size:42px;}
-  .intro-btn{
-    border-radius:999px;border:none;padding:10px 20px;
-    background:#2563eb;color:#fff;font-weight:600;
-    display:inline-flex;align-items:center;gap:6px;
-    box-shadow:0 10px 24px rgba(37,99,235,.7);cursor:pointer;
+  .intro-emoji {
+    font-size: 42px;
   }
-  .export-note{font-size:.75rem;color:#6b7280;margin-top:4px;text-align:right;}
-  @media(max-width:600px){
-    .layout{flex-direction:column;}
-    .piece,.slot{min-height:100px;}
+  .intro h2 {
+    margin: 6px 0;
+    font-size: 1.3rem;
+    color: #111827;
+  }
+  .intro p {
+    margin: 4px 0 10px;
+    font-size: 0.95rem;
+    color: #4b5563;
+  }
+  .intro-btn {
+    border-radius: 999px;
+    border: none;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #9b5de5, #ec4899);
+    color: #fefce8;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(147, 51, 234, 0.7);
+  }
+  .intro-sub {
+    font-size: 0.78rem;
+    color: #9ca3af;
+    max-width: 260px;
+    margin-top: 8px;
+  }
+  .export-note {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 4px;
+    text-align: right;
+  }
+  @media (max-width: 640px) {
+    .layout { flex-direction: column; }
+    .slot-row { gap: 6px; }
+    .slot-label { width: 64px; min-width: 64px; }
+    #pile-area, .slot { min-height: 110px; }
+    .piece, .slot { height: 110px; }
   }
 </style>
 </head>
 <body>
 <div class="app">
   <div id="intro" class="intro">
-    <div class="intro-emoji">🧩</div>
+    <div class="intro-emoji">🧭</div>
     <h2>What do you want to do first?</h2>
-    <p>We will use <strong>pictures</strong>. She can drag a picture into the boxes for <strong>FIRST</strong>, <strong>THEN</strong>, and so on.</p>
-    <button id="intro-start" class="intro-btn">Start with pictures 📷</button>
-    <p style="font-size:.78rem;color:#9ca3af;max-width:260px;margin-top:8px;">
-      Tip: Use photos of real things she knows: park, tablet, snack, TV, walk, quiet time.
-    </p>
+    <p>We use <strong>pictures</strong> like a little map. She can drag a picture into the jungle boxes for <strong>FIRST</strong>, <strong>THEN</strong>, and <strong>LAST</strong>.</p>
+    <button id="intro-start" class="intro-btn">
+      <span>🎒</span> Start the adventure
+    </button>
+    <div class="intro-sub">
+      Tip: Use photos of things she knows: park, tablet, snack, TV, walk, quiet time. Let her choose the path.
+    </div>
   </div>
 
-  <h1>Activity Puzzle</h1>
-  <p class="subtitle">Upload pictures and drag them into the order she prefers: 1 (first) → 5 (last).</p>
+  <div class="jungle-bar">
+    <div class="jungle-icon">🗺️</div>
+    <div class="jungle-text">
+      <h1>Activity Adventure Map</h1>
+      <p>Help her choose what happens first, next, and last.</p>
+    </div>
+  </div>
 
-  <label class="upload-label" for="file-input">📷 Add pictures</label>
+  <p class="subtitle">Upload photos from her phone, then drag or tap them into the boxes from 1 (FIRST) → 5 (LAST).</p>
+
+  <label class="upload-label" for="file-input">
+    <span>📷</span> Add pictures
+  </label>
   <input id="file-input" type="file" accept="image/*" multiple />
-  <div class="small-note">Up to about 5–10 photos works well. She can leave some puzzle pieces unused.</div>
+  <div class="small-note">Up to about 5–10 photos works best. She can leave some pieces in the pile if they are “no thank you” for now.</div>
 
   <div class="layout">
     <section class="pile">
-      <div class="section-title">Puzzle pieces</div>
+      <div class="section-title">
+        <span>🎒</span> Puzzle pieces (Backpack)
+      </div>
       <div id="pile-area"></div>
       <div class="helper-text">
-        <strong>Tip:</strong> Tap a picture once to select it, then tap a box (1–5). Or drag and drop like a puzzle.
+        <strong>How:</strong> Tap a picture once to select it (green glow), then tap a box. Or drag it like a puzzle piece.
       </div>
     </section>
 
     <section class="slots-wrapper">
-      <div class="section-title">Order of activities (1 = FIRST, 5 = LAST)</div>
-      <div id="slots-grid" class="slots-grid">
-        <div class="slot-wrapper">
-          <div class="slot-label"><strong>1</strong> – FIRST</div>
-          <div class="slot is-first empty" data-index="0"></div>
-        </div>
-        <div class="slot-wrapper">
-          <div class="slot-label"><strong>2</strong></div>
-          <div class="slot empty" data-index="1"></div>
-        </div>
-        <div class="slot-wrapper">
-          <div class="slot-label"><strong>3</strong></div>
-          <div class="slot empty" data-index="2"></div>
-        </div>
-        <div class="slot-wrapper">
-          <div class="slot-label"><strong>4</strong></div>
-          <div class="slot empty" data-index="3"></div>
-        </div>
-        <div class="slot-wrapper">
-          <div class="slot-label"><strong>5</strong> – LAST</div>
-          <div class="slot is-last empty" data-index="4"></div>
-        </div>
+      <div class="section-title">
+        <span>🧭</span> Steps on the map (1 = FIRST, 5 = LAST)
       </div>
-      <div class="export-note">You can export the row of boxes as a picture for her schedule.</div>
+      <div id="slots-grid" class="slots-grid"></div>
+      <div class="export-note">You can export the boxes as a picture for her daily schedule.</div>
     </section>
   </div>
 
   <div class="bottom-bar">
-    <div style="font-size:.8rem;color:#6b7280;max-width:60%;">
-      When she is happy with the order, tap <strong>Save order</strong> to see a simple list, or <strong>Export image</strong> to save the puzzle layout.
+    <div style="font-size:0.8rem;color:#6b7280;max-width:60%;">
+      When she is happy with the order, tap <strong>Save order</strong> for a text list or <strong>Export image</strong> for a visual schedule.
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;">
-      <button id="reset-btn" class="btn btn-secondary">Reset</button>
-      <button id="export-btn" class="btn btn-secondary" disabled>Export image</button>
-      <button id="save-btn" class="btn btn-primary" disabled>Save order</button>
+      <button id="start-over" class="btn btn-danger">Start Over</button>
+      <button id="reset-puzzle" class="btn btn-secondary">Reset to Backpack</button>
+      <button id="export-btn" class="btn btn-secondary" disabled>Export Image</button>
+      <button id="save-btn" class="btn btn-primary" disabled>Save Order</button>
     </div>
   </div>
 
@@ -266,10 +515,10 @@
 
   <div id="confirm-overlay" class="overlay">
     <div class="overlay-content">
-      <h2>All done?</h2>
+      <h2>All done with today’s path?</h2>
       <p>Is she finished choosing what she wants to do from <strong>FIRST</strong> to <strong>LAST</strong>?</p>
       <div class="overlay-buttons">
-        <button id="confirm-no" class="btn btn-secondary">Keep changing</button>
+        <button id="confirm-no" class="btn btn-secondary">Keep exploring</button>
         <button id="confirm-yes" class="btn btn-primary">Yes, show the list</button>
       </div>
     </div>
@@ -284,9 +533,10 @@
   const introStart = document.getElementById("intro-start");
   const fileInput = document.getElementById("file-input");
   const pileArea = document.getElementById("pile-area");
-  const slots = Array.from(document.querySelectorAll(".slot"));
+  const slotsGrid = document.getElementById("slots-grid");
   const saveBtn = document.getElementById("save-btn");
-  const resetBtn = document.getElementById("reset-btn");
+  const resetBtn = document.getElementById("reset-puzzle");
+  const startOverBtn = document.getElementById("start-over");
   const exportBtn = document.getElementById("export-btn");
   const resultsBox = document.getElementById("results");
   const toast = document.getElementById("toast");
@@ -294,57 +544,133 @@
   const confirmYes = document.getElementById("confirm-yes");
   const confirmNo = document.getElementById("confirm-no");
 
-  const STORAGE_KEY = "activityPuzzleV3";
+  const STORAGE_KEY = "activityPuzzleDoraV5";
 
-  let pieces = [];  // {id, dataUrl}
-  let selectedPieceId = null;
+  let pieces = []; // {id, dataUrl}
   let slotsState = [null, null, null, null, null];
+  let selectedPieceId = null;
 
   introStart.addEventListener("click", () => {
     intro.style.display = "none";
   });
 
-  function showToast(msg){
+  function showToast(msg) {
     toast.textContent = msg;
     toast.classList.add("show");
     setTimeout(() => toast.classList.remove("show"), 2000);
   }
 
-  function saveState(){
+  function saveState() {
     try {
       const state = {
         pieces,
         slotsState
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch(e){
+    } catch (e) {
       console.warn("Could not save state", e);
     }
   }
 
-  function loadState(){
+  function loadState() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return;
+      if (!raw) {
+        buildSlots();
+        renderAll();
+        return;
+      }
       const state = JSON.parse(raw);
-      if(!state || !Array.isArray(state.pieces)) return;
+      if (!state || !Array.isArray(state.pieces)) {
+        buildSlots();
+        renderAll();
+        return;
+      }
       pieces = state.pieces;
-      slotsState = Array.isArray(state.slotsState) && state.slotsState.length === 5 ? state.slotsState : [null,null,null,null,null];
+      if (Array.isArray(state.slotsState) && state.slotsState.length === 5) {
+        slotsState = state.slotsState;
+      }
+      buildSlots();
       renderAll();
-    } catch(e){
+    } catch (e) {
       console.warn("Could not load state", e);
+      buildSlots();
+      renderAll();
     }
   }
 
-  function clearState(){
+  function clearState() {
     pieces = [];
-    slotsState = [null,null,null,null,null];
+    slotsState = [null, null, null, null, null];
     selectedPieceId = null;
-    try{ localStorage.removeItem(STORAGE_KEY);}catch(e){}
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (e) {}
     renderAll();
   }
 
-  function createPieceElement(piece){
+  function buildSlots() {
+    slotsGrid.innerHTML = "";
+    const labels = [
+      { text: "1", sub: "FIRST", icon: "🗺️" },
+      { text: "2", sub: "", icon: "⭐" },
+      { text: "3", sub: "", icon: "⭐" },
+      { text: "4", sub: "", icon: "⭐" },
+      { text: "5", sub: "LAST", icon: "🏁" }
+    ];
+    for (let i = 0; i < 5; i++) {
+      const row = document.createElement("div");
+      row.className = "slot-row";
+
+      const label = document.createElement("div");
+      label.className = "slot-label";
+      const lab = labels[i];
+      label.innerHTML = `
+        <div class="icon">${lab.icon}</div>
+        <strong>${lab.text}</strong>
+        <span>${lab.sub}</span>
+      `;
+
+      const slot = document.createElement("div");
+      slot.className = "slot";
+      if (i === 0) slot.classList.add("is-first");
+      if (i === 4) slot.classList.add("is-last");
+      slot.dataset.index = i;
+
+      slot.addEventListener("click", () => {
+        if (selectedPieceId) {
+          placeSelectedInSlot(i);
+        }
+      });
+
+      slot.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        slot.classList.add("highlight");
+      });
+      slot.addEventListener("dragleave", () => {
+        slot.classList.remove("highlight");
+      });
+      slot.addEventListener("drop", (e) => {
+        e.preventDefault();
+        slot.classList.remove("highlight");
+        const id = e.dataTransfer.getData("text/plain") || selectedPieceId;
+        if (!id) return;
+        const piece = pieces.find(p => p.id === id);
+        if (!piece) return;
+        slotsState[i] = id;
+        selectedPieceId = null;
+        saveState();
+        renderAll();
+        showSparkle(slot);
+      });
+
+      row.appendChild(label);
+      row.appendChild(slot);
+      slotsGrid.appendChild(row);
+    }
+  }
+
+  function createPieceElement(piece) {
     const div = document.createElement("div");
     div.className = "piece";
     div.draggable = true;
@@ -352,7 +678,14 @@
     div.innerHTML = `<img src="${piece.dataUrl}" alt="activity">`;
 
     div.addEventListener("click", () => {
-      if(selectedPieceId === piece.id){
+      const inSlotIndex = slotsState.indexOf(piece.id);
+      if (inSlotIndex !== -1 && !selectedPieceId) {
+        slotsState[inSlotIndex] = null;
+        saveState();
+        renderAll();
+        return;
+      }
+      if (selectedPieceId === piece.id) {
         selectedPieceId = null;
       } else {
         selectedPieceId = piece.id;
@@ -367,45 +700,33 @@
       e.dataTransfer.setData("text/plain", piece.id);
     });
 
-    div.addEventListener("dragend", () => {
-      // nothing special
-    });
-
     return div;
   }
 
-  function updateSelectionHighlight(){
-    const pieceEls = pileArea.querySelectorAll(".piece");
-    pieceEls.forEach(pe => {
-      pe.classList.toggle("selected", pe.dataset.id === String(selectedPieceId));
-    });
-    slots.forEach(slot => {
-      const child = slot.querySelector(".piece");
-      if(child){
-        child.classList.toggle("selected", child.dataset.id === String(selectedPieceId));
-      }
+  function updateSelectionHighlight() {
+    const allPieces = document.querySelectorAll(".piece");
+    allPieces.forEach(el => {
+      el.classList.toggle("selected", el.dataset.id === String(selectedPieceId));
     });
   }
 
-  function renderAll(){
-    // pile
+  function renderAll() {
     pileArea.innerHTML = "";
     pieces.forEach(p => {
-      const isUsed = slotsState.includes(p.id);
-      if(!isUsed){
+      if (!slotsState.includes(p.id)) {
         const el = createPieceElement(p);
         pileArea.appendChild(el);
       }
     });
 
-    // slots
-    slots.forEach((slotEl, idx) => {
-      const id = slotsState[idx];
+    const slotDivs = Array.from(document.querySelectorAll(".slot"));
+    slotDivs.forEach((slotEl, idx) => {
       slotEl.innerHTML = "";
       slotEl.classList.add("empty");
-      if(id){
+      const id = slotsState[idx];
+      if (id) {
         const piece = pieces.find(p => p.id === id);
-        if(piece){
+        if (piece) {
           const el = createPieceElement(piece);
           slotEl.appendChild(el);
           slotEl.classList.remove("empty");
@@ -420,45 +741,29 @@
     updateSelectionHighlight();
   }
 
-  function placeSelectedInSlot(slotIndex){
-    if(!selectedPieceId) return;
+  function placeSelectedInSlot(slotIndex) {
+    if (!selectedPieceId) return;
     const pieceExists = pieces.find(p => p.id === selectedPieceId);
-    if(!pieceExists) return;
+    if (!pieceExists) return;
+    const prevIndex = slotsState.indexOf(selectedPieceId);
+    if (prevIndex !== -1) {
+      slotsState[prevIndex] = null;
+    }
     slotsState[slotIndex] = selectedPieceId;
     selectedPieceId = null;
     saveState();
     renderAll();
+    const slotRow = slotsGrid.querySelector(`.slot[data-index="${slotIndex}"]`);
+    if (slotRow) showSparkle(slotRow);
   }
 
-  slots.forEach((slotEl, idx) => {
-    slotEl.addEventListener("click", () => {
-      if(selectedPieceId){
-        placeSelectedInSlot(idx);
-      }
-    });
-
-    slotEl.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      slotEl.classList.add("highlight");
-    });
-
-    slotEl.addEventListener("dragleave", (e) => {
-      slotEl.classList.remove("highlight");
-    });
-
-    slotEl.addEventListener("drop", (e) => {
-      e.preventDefault();
-      slotEl.classList.remove("highlight");
-      const id = e.dataTransfer.getData("text/plain") || selectedPieceId;
-      if(!id) return;
-      const piece = pieces.find(p => p.id === id);
-      if(!piece) return;
-      slotsState[idx] = id;
-      selectedPieceId = null;
-      saveState();
-      renderAll();
-    });
-  });
+  function showSparkle(slotEl) {
+    const sp = document.createElement("div");
+    sp.className = "sparkle";
+    sp.textContent = "✨";
+    slotEl.appendChild(sp);
+    setTimeout(() => sp.remove(), 650);
+  }
 
   pileArea.addEventListener("dragover", (e) => {
     e.preventDefault();
@@ -466,10 +771,10 @@
   pileArea.addEventListener("drop", (e) => {
     e.preventDefault();
     const id = e.dataTransfer.getData("text/plain") || selectedPieceId;
-    if(!id) return;
-    const indexInSlots = slotsState.indexOf(id);
-    if(indexInSlots !== -1){
-      slotsState[indexInSlots] = null;
+    if (!id) return;
+    const idx = slotsState.indexOf(id);
+    if (idx !== -1) {
+      slotsState[idx] = null;
       selectedPieceId = null;
       saveState();
       renderAll();
@@ -478,18 +783,18 @@
 
   fileInput.addEventListener("change", (e) => {
     const files = Array.from(e.target.files || []);
-    if(!files.length) return;
+    if (!files.length) return;
     const remainingSlots = Math.max(0, 10 - pieces.length);
     const chosen = files.slice(0, remainingSlots || 0);
-    if(!chosen.length){
-      showToast("Limit reached");
+    if (!chosen.length) {
+      showToast("Backpack is full (limit reached)");
       fileInput.value = "";
       return;
     }
 
     let loadedCount = 0;
     chosen.forEach(file => {
-      if(!file.type.startsWith("image/")) return;
+      if (!file.type.startsWith("image/")) return;
       const reader = new FileReader();
       reader.onload = (evt) => {
         const dataUrl = evt.target.result;
@@ -498,7 +803,7 @@
           dataUrl
         });
         loadedCount++;
-        if(loadedCount === chosen.length){
+        if (loadedCount === chosen.length) {
           saveState();
           renderAll();
           showToast("Added " + loadedCount + " picture" + (loadedCount > 1 ? "s" : ""));
@@ -514,15 +819,24 @@
   });
 
   resetBtn.addEventListener("click", () => {
-    if(!pieces.length && slotsState.every(x => !x)) return;
-    if(confirm("Clear all pictures and start again?")){
+    if (!pieces.length && slotsState.every(x => !x)) return;
+    slotsState = [null, null, null, null, null];
+    selectedPieceId = null;
+    saveState();
+    renderAll();
+    showToast("All pieces back to backpack");
+  });
+
+  startOverBtn.addEventListener("click", () => {
+    if (!pieces.length && slotsState.every(x => !x)) return;
+    if (confirm("Start completely over and remove all pictures?")) {
       clearState();
-      showToast("Reset");
+      showToast("Adventure reset");
     }
   });
 
   saveBtn.addEventListener("click", () => {
-    if(!pieces.length) return;
+    if (!pieces.length) return;
     confirmOverlay.style.display = "flex";
   });
 
@@ -535,23 +849,22 @@
     showResults();
   });
 
-  function showResults(){
+  function showResults() {
     const lines = [];
     slotsState.forEach((id, idx) => {
-      if(!id) return;
+      if (!id) return;
       const pieceIndex = pieces.findIndex(p => p.id === id);
       const label = "Picture " + (pieceIndex + 1);
       let tag = "";
-      if(idx === 0) tag = " (FIRST)";
-      else if(idx === slotsState.length - 1) tag = " (LAST)";
-      lines.push((idx+1) + ". " + label + tag);
+      if (idx === 0) tag = " (FIRST)";
+      else if (idx === slotsState.length - 1) tag = " (LAST)";
+      lines.push((idx + 1) + ". " + label + tag);
     });
-    if(!lines.length){
-      resultsBox.style.display = "block";
+    resultsBox.style.display = "block";
+    if (!lines.length) {
       resultsBox.innerHTML = "<strong>No boxes filled yet.</strong>";
       return;
     }
-    resultsBox.style.display = "block";
     resultsBox.innerHTML = "<strong>Order (copy or screenshot):</strong>" +
       lines.map(l => `<div>${l}</div>`).join("");
     resultsBox.scrollTop = 0;
@@ -559,12 +872,11 @@
   }
 
   exportBtn.addEventListener("click", async () => {
-    if(typeof html2canvas === "undefined"){
+    if (typeof html2canvas === "undefined") {
       showToast("Export not available");
       return;
     }
-    const slotsGrid = document.getElementById("slots-grid");
-    try{
+    try {
       const canvas = await html2canvas(slotsGrid, {
         backgroundColor: "#ffffff",
         scale: window.devicePixelRatio > 1 ? 2 : 1
@@ -572,12 +884,12 @@
       const dataUrl = canvas.toDataURL("image/png");
       const link = document.createElement("a");
       link.href = dataUrl;
-      link.download = "activity-order.png";
+      link.download = "activity-adventure-order.png";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       showToast("Image downloaded");
-    }catch(e){
+    } catch (e) {
       console.error(e);
       showToast("Could not export image");
     }
