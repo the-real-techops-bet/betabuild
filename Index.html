@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Activity Puzzle – Choose First → Last</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+  * { box-sizing: border-box; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  body {
+    margin: 0; padding: 0;
+    background: radial-gradient(circle at top, #bfdbfe 0, #e5f3ff 45%, #f9fafb 100%);
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh;
+  }
+  .app {
+    background: #ffffff;
+    width: 100%; max-width: 720px;
+    margin: 10px; padding: 18px 16px 22px;
+    border-radius: 20px;
+    box-shadow: 0 16px 40px rgba(15,23,42,0.25);
+    position: relative;
+    overflow: hidden;
+  }
+  h1 { margin: 0 0 4px; text-align: center; font-size: 1.4rem; color:#111827; }
+  .subtitle { text-align: center; font-size: .9rem; color: #4b5563; margin-bottom: 10px; }
+  #file-input { display: none; }
+  .upload-label {
+    display: block; text-align: center; margin: 10px auto 4px;
+    background: linear-gradient(135deg,#2563eb,#22c55e);
+    padding: 10px 18px; color: #fff; border-radius: 999px;
+    width: fit-content; cursor: pointer; font-weight: 600;
+    box-shadow: 0 8px 20px rgba(37,99,235,.55);
+  }
+  .small-note { text-align:center; font-size:.78rem; color:#6b7280; margin-bottom:8px; }
+  .layout {
+    display:flex; gap:10px; flex-wrap:wrap;
+  }
+  .pile, .slots-wrapper {
+    flex:1 1 260px;
+  }
+  .section-title {
+    font-size:.9rem; font-weight:600; color:#374151; margin-bottom:4px;
+  }
+  #pile-area {
+    min-height:180px; border-radius:14px; padding:8px;
+    border:2px dashed #c7d2fe; background:#eff6ff;
+    display:flex; flex-wrap:wrap; gap:8px; justify-content:center;
+  }
+  .piece {
+    width:110px; height:110px;
+    background:#e5e7eb; border-radius:12px; overflow:hidden;
+    position:relative; cursor:grab; touch-action:none;
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .piece img {
+    width:100%; height:100%; object-fit:cover; display:block;
+    pointer-events:none;
+  }
+  .piece.selected {
+    outline:3px solid #22c55e;
+    transform:scale(1.03);
+    box-shadow:0 0 0 2px #bbf7d0;
+  }
+  .piece::after {
+    content:"";
+    position:absolute; inset:0; pointer-events:none;
+    border-radius:inherit;
+  }
+  .slots-wrapper {
+    margin-top:4px;
+  }
+  .slots-grid {
+    display:grid;
+    grid-template-columns: repeat(auto-fit,minmax(110px,1fr));
+    gap:8px;
+  }
+  .slot-wrapper {
+    display:flex; flex-direction:column; align-items:stretch; gap:4px;
+  }
+  .slot-label {
+    text-align:center; font-size:.82rem; color:#4b5563;
+  }
+  .slot-label strong { font-size:.86rem; }
+  .slot {
+    min-height:110px; border-radius:14px; border:2px dashed #cbd5e1;
+    background:#f9fafb; position:relative; overflow:hidden;
+    transition:border-color .15s ease, background .15s ease, transform .1s ease;
+  }
+  .slot.highlight {
+    border-color:#2563eb;
+    background:#eff6ff;
+    transform:scale(1.02);
+  }
+  .slot.is-first { border-color:#22c55e; background:#ecfdf3; }
+  .slot.is-last { border-color:#f97316; background:#fff7ed; }
+  .slot.empty::before {
+    content:"Drop here";
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:.8rem; color:#9ca3af;
+  }
+  .slot piece-placeholder { display:none; }
+  .slot .piece {
+    width:100%; height:100%; border-radius:10px;
+    cursor:grab;
+  }
+  .helper-text {
+    font-size:.8rem; color:#6b7280; margin-top:4px;
+  }
+  .helper-text strong{color:#111827;}
+  .bottom-bar {
+    margin-top:10px; display:flex; flex-wrap:wrap;
+    justify-content:space-between; align-items:center; gap:8px;
+  }
+  .btn {
+    border-radius:999px; border:none; padding:8px 14px;
+    font-size:.9rem; font-weight:600; cursor:pointer;
+    display:inline-flex; align-items:center; gap:4px;
+    white-space:nowrap;
+  }
+  .btn-primary {
+    background:#22c55e; color:#fff;
+    box-shadow:0 4px 12px rgba(22,163,74,.6);
+  }
+  .btn-secondary {
+    background:#e5e7eb; color:#111827;
+  }
+  .btn-danger {
+    background:#fee2e2; color:#b91c1c;
+  }
+  .btn:disabled {
+    opacity:.5; cursor:default; box-shadow:none;
+  }
+  .results {
+    margin-top:8px; font-size:.8rem; color:#111827;
+    background:#eff6ff; border-radius:10px; padding:8px 10px;
+    max-height:150px; overflow-y:auto; display:none;
+  }
+  .results strong{font-size:.85rem;}
+  .toast {
+    position:fixed; left:50%; bottom:14px;
+    transform:translateX(-50%);
+    background:rgba(15,23,42,.92); color:#f9fafb;
+    padding:6px 12px; border-radius:999px;
+    font-size:.8rem; display:none; z-index:50;
+  }
+  .toast.show {
+    display:inline-flex; align-items:center; gap:6px;
+    animation:fadeToast 2s ease-out forwards;
+  }
+  @keyframes fadeToast {
+    0%{opacity:0; transform:translate(-50%,4px);}
+    10%{opacity:1; transform:translate(-50%,0);}
+    80%{opacity:1; transform:translate(-50%,0);}
+    100%{opacity:0; transform:translate(-50%,4px);}
+  }
+  .overlay {
+    position:absolute; inset:0;
+    background:rgba(15,23,42,.35);
+    display:none; align-items:center; justify-content:center;
+    z-index:30;
+  }
+  .overlay-content {
+    background:#fff; border-radius:16px; padding:14px 14px 12px;
+    width:90%; max-width:320px; text-align:center;
+    box-shadow:0 16px 50px rgba(15,23,42,.6);
+  }
+  .overlay-content h2 {
+    font-size:1.1rem; margin:4px 0; color:#111827;
+  }
+  .overlay-content p {
+    font-size:.9rem; color:#4b5563; margin:4px 0 10px;
+  }
+  .overlay-buttons {
+    display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:6px;
+  }
+  .intro {
+    position:absolute; inset:0; background:#fff;
+    display:flex; flex-direction:column; align-items:center;
+    justify-content:center; padding:18px 16px; text-align:center; z-index:40;
+  }
+  .intro h2{margin:6px 0;font-size:1.3rem;color:#111827;}
+  .intro p{margin:4px 0 10px;font-size:.95rem;color:#4b5563;}
+  .intro-emoji{font-size:42px;}
+  .intro-btn{
+    border-radius:999px;border:none;padding:10px 20px;
+    background:#2563eb;color:#fff;font-weight:600;
+    display:inline-flex;align-items:center;gap:6px;
+    box-shadow:0 10px 24px rgba(37,99,235,.7);cursor:pointer;
+  }
+  .export-note{font-size:.75rem;color:#6b7280;margin-top:4px;text-align:right;}
+  @media(max-width:600px){
+    .layout{flex-direction:column;}
+    .piece,.slot{min-height:100px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="intro" class="intro">
+    <div class="intro-emoji">🧩</div>
+    <h2>What do you want to do first?</h2>
+    <p>We will use <strong>pictures</strong>. She can drag a picture into the boxes for <strong>FIRST</strong>, <strong>THEN</strong>, and so on.</p>
+    <button id="intro-start" class="intro-btn">Start with pictures 📷</button>
+    <p style="font-size:.78rem;color:#9ca3af;max-width:260px;margin-top:8px;">
+      Tip: Use photos of real things she knows: park, tablet, snack, TV, walk, quiet time.
+    </p>
+  </div>
+
+  <h1>Activity Puzzle</h1>
+  <p class="subtitle">Upload pictures and drag them into the order she prefers: 1 (first) → 5 (last).</p>
+
+  <label class="upload-label" for="file-input">📷 Add pictures</label>
+  <input id="file-input" type="file" accept="image/*" multiple />
+  <div class="small-note">Up to about 5–10 photos works well. She can leave some puzzle pieces unused.</div>
+
+  <div class="layout">
+    <section class="pile">
+      <div class="section-title">Puzzle pieces</div>
+      <div id="pile-area"></div>
+      <div class="helper-text">
+        <strong>Tip:</strong> Tap a picture once to select it, then tap a box (1–5). Or drag and drop like a puzzle.
+      </div>
+    </section>
+
+    <section class="slots-wrapper">
+      <div class="section-title">Order of activities (1 = FIRST, 5 = LAST)</div>
+      <div id="slots-grid" class="slots-grid">
+        <div class="slot-wrapper">
+          <div class="slot-label"><strong>1</strong> – FIRST</div>
+          <div class="slot is-first empty" data-index="0"></div>
+        </div>
+        <div class="slot-wrapper">
+          <div class="slot-label"><strong>2</strong></div>
+          <div class="slot empty" data-index="1"></div>
+        </div>
+        <div class="slot-wrapper">
+          <div class="slot-label"><strong>3</strong></div>
+          <div class="slot empty" data-index="2"></div>
+        </div>
+        <div class="slot-wrapper">
+          <div class="slot-label"><strong>4</strong></div>
+          <div class="slot empty" data-index="3"></div>
+        </div>
+        <div class="slot-wrapper">
+          <div class="slot-label"><strong>5</strong> – LAST</div>
+          <div class="slot is-last empty" data-index="4"></div>
+        </div>
+      </div>
+      <div class="export-note">You can export the row of boxes as a picture for her schedule.</div>
+    </section>
+  </div>
+
+  <div class="bottom-bar">
+    <div style="font-size:.8rem;color:#6b7280;max-width:60%;">
+      When she is happy with the order, tap <strong>Save order</strong> to see a simple list, or <strong>Export image</strong> to save the puzzle layout.
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+      <button id="reset-btn" class="btn btn-secondary">Reset</button>
+      <button id="export-btn" class="btn btn-secondary" disabled>Export image</button>
+      <button id="save-btn" class="btn btn-primary" disabled>Save order</button>
+    </div>
+  </div>
+
+  <div id="results" class="results"></div>
+
+  <div id="confirm-overlay" class="overlay">
+    <div class="overlay-content">
+      <h2>All done?</h2>
+      <p>Is she finished choosing what she wants to do from <strong>FIRST</strong> to <strong>LAST</strong>?</p>
+      <div class="overlay-buttons">
+        <button id="confirm-no" class="btn btn-secondary">Keep changing</button>
+        <button id="confirm-yes" class="btn btn-primary">Yes, show the list</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">Saved</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" integrity="sha256-yM+MiN6KDAdAm8YGtS+wGGyRyvE4s46HoPazTA/gkGk=" crossorigin="anonymous"></script>
+<script>
+  const intro = document.getElementById("intro");
+  const introStart = document.getElementById("intro-start");
+  const fileInput = document.getElementById("file-input");
+  const pileArea = document.getElementById("pile-area");
+  const slots = Array.from(document.querySelectorAll(".slot"));
+  const saveBtn = document.getElementById("save-btn");
+  const resetBtn = document.getElementById("reset-btn");
+  const exportBtn = document.getElementById("export-btn");
+  const resultsBox = document.getElementById("results");
+  const toast = document.getElementById("toast");
+  const confirmOverlay = document.getElementById("confirm-overlay");
+  const confirmYes = document.getElementById("confirm-yes");
+  const confirmNo = document.getElementById("confirm-no");
+
+  const STORAGE_KEY = "activityPuzzleV3";
+
+  let pieces = [];  // {id, dataUrl}
+  let selectedPieceId = null;
+  let slotsState = [null, null, null, null, null];
+
+  introStart.addEventListener("click", () => {
+    intro.style.display = "none";
+  });
+
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 2000);
+  }
+
+  function saveState(){
+    try {
+      const state = {
+        pieces,
+        slotsState
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch(e){
+      console.warn("Could not save state", e);
+    }
+  }
+
+  function loadState(){
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return;
+      const state = JSON.parse(raw);
+      if(!state || !Array.isArray(state.pieces)) return;
+      pieces = state.pieces;
+      slotsState = Array.isArray(state.slotsState) && state.slotsState.length === 5 ? state.slotsState : [null,null,null,null,null];
+      renderAll();
+    } catch(e){
+      console.warn("Could not load state", e);
+    }
+  }
+
+  function clearState(){
+    pieces = [];
+    slotsState = [null,null,null,null,null];
+    selectedPieceId = null;
+    try{ localStorage.removeItem(STORAGE_KEY);}catch(e){}
+    renderAll();
+  }
+
+  function createPieceElement(piece){
+    const div = document.createElement("div");
+    div.className = "piece";
+    div.draggable = true;
+    div.dataset.id = piece.id;
+    div.innerHTML = `<img src="${piece.dataUrl}" alt="activity">`;
+
+    div.addEventListener("click", () => {
+      if(selectedPieceId === piece.id){
+        selectedPieceId = null;
+      } else {
+        selectedPieceId = piece.id;
+      }
+      updateSelectionHighlight();
+    });
+
+    div.addEventListener("dragstart", (e) => {
+      selectedPieceId = piece.id;
+      updateSelectionHighlight();
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", piece.id);
+    });
+
+    div.addEventListener("dragend", () => {
+      // nothing special
+    });
+
+    return div;
+  }
+
+  function updateSelectionHighlight(){
+    const pieceEls = pileArea.querySelectorAll(".piece");
+    pieceEls.forEach(pe => {
+      pe.classList.toggle("selected", pe.dataset.id === String(selectedPieceId));
+    });
+    slots.forEach(slot => {
+      const child = slot.querySelector(".piece");
+      if(child){
+        child.classList.toggle("selected", child.dataset.id === String(selectedPieceId));
+      }
+    });
+  }
+
+  function renderAll(){
+    // pile
+    pileArea.innerHTML = "";
+    pieces.forEach(p => {
+      const isUsed = slotsState.includes(p.id);
+      if(!isUsed){
+        const el = createPieceElement(p);
+        pileArea.appendChild(el);
+      }
+    });
+
+    // slots
+    slots.forEach((slotEl, idx) => {
+      const id = slotsState[idx];
+      slotEl.innerHTML = "";
+      slotEl.classList.add("empty");
+      if(id){
+        const piece = pieces.find(p => p.id === id);
+        if(piece){
+          const el = createPieceElement(piece);
+          slotEl.appendChild(el);
+          slotEl.classList.remove("empty");
+        }
+      }
+    });
+
+    const hasAny = pieces.length > 0;
+    saveBtn.disabled = !hasAny;
+    exportBtn.disabled = !hasAny;
+    resultsBox.style.display = "none";
+    updateSelectionHighlight();
+  }
+
+  function placeSelectedInSlot(slotIndex){
+    if(!selectedPieceId) return;
+    const pieceExists = pieces.find(p => p.id === selectedPieceId);
+    if(!pieceExists) return;
+    slotsState[slotIndex] = selectedPieceId;
+    selectedPieceId = null;
+    saveState();
+    renderAll();
+  }
+
+  slots.forEach((slotEl, idx) => {
+    slotEl.addEventListener("click", () => {
+      if(selectedPieceId){
+        placeSelectedInSlot(idx);
+      }
+    });
+
+    slotEl.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      slotEl.classList.add("highlight");
+    });
+
+    slotEl.addEventListener("dragleave", (e) => {
+      slotEl.classList.remove("highlight");
+    });
+
+    slotEl.addEventListener("drop", (e) => {
+      e.preventDefault();
+      slotEl.classList.remove("highlight");
+      const id = e.dataTransfer.getData("text/plain") || selectedPieceId;
+      if(!id) return;
+      const piece = pieces.find(p => p.id === id);
+      if(!piece) return;
+      slotsState[idx] = id;
+      selectedPieceId = null;
+      saveState();
+      renderAll();
+    });
+  });
+
+  pileArea.addEventListener("dragover", (e) => {
+    e.preventDefault();
+  });
+  pileArea.addEventListener("drop", (e) => {
+    e.preventDefault();
+    const id = e.dataTransfer.getData("text/plain") || selectedPieceId;
+    if(!id) return;
+    const indexInSlots = slotsState.indexOf(id);
+    if(indexInSlots !== -1){
+      slotsState[indexInSlots] = null;
+      selectedPieceId = null;
+      saveState();
+      renderAll();
+    }
+  });
+
+  fileInput.addEventListener("change", (e) => {
+    const files = Array.from(e.target.files || []);
+    if(!files.length) return;
+    const remainingSlots = Math.max(0, 10 - pieces.length);
+    const chosen = files.slice(0, remainingSlots || 0);
+    if(!chosen.length){
+      showToast("Limit reached");
+      fileInput.value = "";
+      return;
+    }
+
+    let loadedCount = 0;
+    chosen.forEach(file => {
+      if(!file.type.startsWith("image/")) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const dataUrl = evt.target.result;
+        pieces.push({
+          id: Date.now().toString() + Math.random().toString(16).slice(2),
+          dataUrl
+        });
+        loadedCount++;
+        if(loadedCount === chosen.length){
+          saveState();
+          renderAll();
+          showToast("Added " + loadedCount + " picture" + (loadedCount > 1 ? "s" : ""));
+        }
+      };
+      reader.onerror = () => {
+        console.warn("Error reading file");
+      };
+      reader.readAsDataURL(file);
+    });
+
+    fileInput.value = "";
+  });
+
+  resetBtn.addEventListener("click", () => {
+    if(!pieces.length && slotsState.every(x => !x)) return;
+    if(confirm("Clear all pictures and start again?")){
+      clearState();
+      showToast("Reset");
+    }
+  });
+
+  saveBtn.addEventListener("click", () => {
+    if(!pieces.length) return;
+    confirmOverlay.style.display = "flex";
+  });
+
+  confirmNo.addEventListener("click", () => {
+    confirmOverlay.style.display = "none";
+  });
+
+  confirmYes.addEventListener("click", () => {
+    confirmOverlay.style.display = "none";
+    showResults();
+  });
+
+  function showResults(){
+    const lines = [];
+    slotsState.forEach((id, idx) => {
+      if(!id) return;
+      const pieceIndex = pieces.findIndex(p => p.id === id);
+      const label = "Picture " + (pieceIndex + 1);
+      let tag = "";
+      if(idx === 0) tag = " (FIRST)";
+      else if(idx === slotsState.length - 1) tag = " (LAST)";
+      lines.push((idx+1) + ". " + label + tag);
+    });
+    if(!lines.length){
+      resultsBox.style.display = "block";
+      resultsBox.innerHTML = "<strong>No boxes filled yet.</strong>";
+      return;
+    }
+    resultsBox.style.display = "block";
+    resultsBox.innerHTML = "<strong>Order (copy or screenshot):</strong>" +
+      lines.map(l => `<div>${l}</div>`).join("");
+    resultsBox.scrollTop = 0;
+    showToast("Order saved");
+  }
+
+  exportBtn.addEventListener("click", async () => {
+    if(typeof html2canvas === "undefined"){
+      showToast("Export not available");
+      return;
+    }
+    const slotsGrid = document.getElementById("slots-grid");
+    try{
+      const canvas = await html2canvas(slotsGrid, {
+        backgroundColor: "#ffffff",
+        scale: window.devicePixelRatio > 1 ? 2 : 1
+      });
+      const dataUrl = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = "activity-order.png";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Image downloaded");
+    }catch(e){
+      console.error(e);
+      showToast("Could not export image");
+    }
+  });
+
+  loadState();
+</script>
+</body>
+</html>
